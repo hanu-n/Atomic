@@ -3,15 +3,18 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
-import admin from "firebase-admin"
+
 import connectionFunc from './config/config.js'
 
 const app=express()
+app.use(morgan("dev"));
+app.use(cors())
+
 
 
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    // connectionFunc()
+     connectionFunc()
   console.log(`🚀 Server running on port ${PORT}`);
 });
