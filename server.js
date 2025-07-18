@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import morgan from "morgan";
 import productRoutes from './routes/productRoutes.js'
+import contactRoute from './routes/contactRoute.js'
 
 import connectionFunc from './config/config.js'
 
@@ -12,6 +13,7 @@ app.use(morgan("dev"));
 app.use(cors())
 
 app.use('/api/products',productRoutes)
+app.use('/api/contact',contactRoute)
 
 
 
