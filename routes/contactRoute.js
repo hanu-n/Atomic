@@ -1,10 +1,13 @@
 import express from 'express'
 import Contact from '../models/Contact.js'
+import { firebaseAuth } from '../middlewares/firebaseAuth.js'
+
 
 const router=express.Router()
 
-router.post('/' , async(req,res)=>{
+router.post('/',firebaseAuth , async(req,res)=>{
     try {
+      
         const { fullName, email, subject, message }=req.body
 
         if (!fullName || !email || !subject || !message) {
