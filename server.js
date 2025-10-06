@@ -4,8 +4,12 @@ import morgan from "morgan";
 import productRoutes from './routes/productRoutes.js'
 import contactRoute from './routes/contactRoute.js'
 import OrderRoutes from './routes/OrderRoutes.js'
+import categoryRoutes  from './routes/categoryRoutes.js'
+ import userRoutes from './routes/userRoutes.js'
 import path from 'path';
 import { fileURLToPath } from 'url';
+import adminRoutes from './routes/adminRoute.js'
+import paymentRoutes from './routes/paymentRoutes.js'
 
 import connectionFunc from './config/config.js'
 
@@ -23,7 +27,14 @@ app.use(cors())
 app.use('/api/products',productRoutes)
 app.use('/api/contact',contactRoute)
 app.use('/api/orders',OrderRoutes)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/api/categories',categoryRoutes)
+ app.use('/api/users',userRoutes)
+ app.use('/api/admin',adminRoutes)
+ app.use('/api/payments', paymentRoutes);
+
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'Uploads')));
 
 
 
