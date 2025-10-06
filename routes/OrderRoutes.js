@@ -13,6 +13,7 @@ router.get('/all', firebaseAuth, getAllOrders);
 
 // PUT to mark order as seen
 router.put('/:id/seen', firebaseAuth, markOrderAsSeen);
+// router.get("/:id/receipt",firebaseAuth,generateReceipt)
 
 
 export default router

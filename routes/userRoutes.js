@@ -1,10 +1,3 @@
-// ...existing code...
-
-// Place this route after router is defined and with other route handlers
-
-/**
- * Update user role by MongoDB _id (admin only, for frontend compatibility)
- */
 
 import express from "express";
 import jwt from "jsonwebtoken";
