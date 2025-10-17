@@ -5,7 +5,7 @@ import { firebaseAuth } from '../middlewares/firebaseAuth.js'
 
 const router=express.Router()
 
-router.post('/',firebaseAuth , async(req,res)=>{
+router.post('/', async(req,res)=>{
     try {
       
         const { fullName, email, subject, message }=req.body

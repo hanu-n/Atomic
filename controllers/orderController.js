@@ -1,36 +1,6 @@
 import Order from '../models/Order.js'
 import User from '../models/User.js'
 
-// export const createOrder=async (req,res)=>{
-// const {
-//     orderItems,
-//     shippingAddress,
-//     totalPrice,
-//   } = req.body;
-//   try{
-
-// if (!orderItems || orderItems.length === 0) {
-//   return res.status(400).json({ message: 'No order items' });
-// }
-
-// const order=new Order({
-//      user: req.user.id,
-//     orderItems,
-//     shippingAddress,
-//     totalPrice,
-// })
-
-
-// const createdOrder = await order.save()
-//   res.status(201).json(createdOrder);
-
-//   }
-//   catch(error){
-//       console.error("❌ Order creation failed:", error);
-//         res.status(500).json({ message: "Failed to create orders" });
-
-//   }
-// }
 export const createOrder = async (req, res) => {
   const { orderItems, shippingAddress, totalPrice } = req.body;
 
