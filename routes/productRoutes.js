@@ -6,26 +6,41 @@ import { firebaseAuth,adminAuth } from "../middlewares/firebaseAuth.js";
 
 const router = express.Router();
 
-// GET all products (with filters)
+
+// ✅ GET all products (with filters, now slug-tolerant)
 router.get("/", async (req, res) => {
   try {
     const { category, subCategory, subSubCategory, outOfStock } = req.query;
+
+    // --- normalize helper ---
+    const normalize = (str) => {
+      if (!str) return str;
+      return str
+        .replace(/-/g, " ") // convert dashes to spaces
+        .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize each word
+    };
+
     let filter = {};
 
-    if (category) filter.category = category;
-    if (subCategory && subCategory !== "all") filter.subcategory = subCategory;
-    if (subSubCategory && subSubCategory !== "all") filter.subSubcategory = subSubCategory;
+    if (category) filter.category = normalize(category);
+    if (subCategory && subCategory !== "all")
+      filter.subcategory = normalize(subCategory);
+    if (subSubCategory && subSubCategory !== "all")
+      filter.subSubcategory = normalize(subSubCategory);
+
     if (outOfStock === "true") filter.countInStock = { $lte: 0 };
 
-    console.log("Filter applied:", filter);
+    console.log("🧭 Filter applied:", filter);
     const products = await Product.find(filter);
-    console.log("Products found:", products.length);
+    console.log("✅ Products found:", products.length);
+
     res.json(products);
   } catch (error) {
     console.error("❌ Error fetching products:", error);
     res.status(500).json({ message: "Failed to fetch products" });
   }
 });
+
 
 // GET by search
 router.get("/search", async (req, res) => {
