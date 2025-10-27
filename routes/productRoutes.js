@@ -11,28 +11,18 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const { category, subCategory, subSubCategory, outOfStock } = req.query;
-
-    // --- normalize helper ---
-    const normalize = (str) => {
-      if (!str) return str;
-      return str
-        .replace(/-/g, " ") // convert dashes to spaces
-        .replace(/\b\w/g, (c) => c.toUpperCase()); // capitalize each word
-    };
-
     let filter = {};
 
-    if (category) filter.category = normalize(category);
-    if (subCategory && subCategory !== "all")
-      filter.subcategory = normalize(subCategory);
-    if (subSubCategory && subSubCategory !== "all")
-      filter.subSubcategory = normalize(subSubCategory);
-
+    // Case-insensitive filtering using regex
+    if (category) filter.category = new RegExp(`^${category}$`, "i");
+    if (subCategory && subCategory !== "all") filter.subcategory = new RegExp(`^${subCategory}$`, "i");
+    if (subSubCategory && subSubCategory !== "all") filter.subSubcategory = new RegExp(`^${subSubCategory}$`, "i");
     if (outOfStock === "true") filter.countInStock = { $lte: 0 };
 
-    console.log("🧭 Filter applied:", filter);
+    console.log("Applied filter:", filter);
+
     const products = await Product.find(filter);
-    console.log("✅ Products found:", products.length);
+    console.log(`✅ Found ${products.length} products`);
 
     res.json(products);
   } catch (error) {
@@ -40,6 +30,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch products" });
   }
 });
+
 
 
 // GET by search
