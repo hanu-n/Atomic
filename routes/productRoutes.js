@@ -1,5 +1,6 @@
 import express from "express";
 import Product from "../models/productModels.js";
+import Category from "../models/Category.js";
 import upload from "../middlewares/upload.js";
 import { createProduct,updateProduct } from "../controllers/productController.js";
 import { firebaseAuth,adminAuth } from "../middlewares/firebaseAuth.js";
@@ -13,10 +14,34 @@ router.get("/", async (req, res) => {
     const { category, subCategory, subSubCategory, outOfStock } = req.query;
     let filter = {};
 
-    // Case-insensitive filtering using regex
-    if (category) filter.category = new RegExp(`^${category}$`, "i");
-    if (subCategory && subCategory !== "all") filter.subcategory = new RegExp(`^${subCategory}$`, "i");
-    if (subSubCategory && subSubCategory !== "all") filter.subSubcategory = new RegExp(`^${subSubCategory}$`, "i");
+    // Resolve slugs to stored category/subcategory names when possible.
+    // Nav links use slugs (eg. 'school-equipment') while products store human-readable names.
+    let resolvedCategory = category;
+    let resolvedSub = subCategory;
+    let resolvedSubSub = subSubCategory;
+
+    if (category) {
+      // Try to find a Category document by slug or (case-insensitive) name
+      const catDoc = await Category.findOne({ $or: [{ slug: category }, { name: new RegExp(`^${category}$`, 'i') }] });
+      if (catDoc) {
+        resolvedCategory = catDoc.name;
+        // If subCategory is provided as a slug, try to resolve it from the category doc
+        if (subCategory && subCategory !== 'all') {
+          const foundSub = catDoc.subCategories?.find(s => s.slug === subCategory || new RegExp(`^${subCategory}$`, 'i').test(s.name));
+          if (foundSub) resolvedSub = foundSub.name;
+          // If subSubCategory present, try to resolve under foundSub
+          if (foundSub && subSubCategory && subSubCategory !== 'all') {
+            const foundSubSub = foundSub.subCategories?.find(ss => ss.slug === subSubCategory || new RegExp(`^${subSubCategory}$`, 'i').test(ss.name));
+            if (foundSubSub) resolvedSubSub = foundSubSub.name;
+          }
+        }
+      }
+    }
+
+    // Case-insensitive filtering using regex on the resolved values
+    if (resolvedCategory) filter.category = new RegExp(`^${resolvedCategory}$`, "i");
+    if (resolvedSub && resolvedSub !== "all") filter.subcategory = new RegExp(`^${resolvedSub}$`, "i");
+    if (resolvedSubSub && resolvedSubSub !== "all") filter.subSubcategory = new RegExp(`^${resolvedSubSub}$`, "i");
     if (outOfStock === "true") filter.countInStock = { $lte: 0 };
 
     console.log("Applied filter:", filter);
