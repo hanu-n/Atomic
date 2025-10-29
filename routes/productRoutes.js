@@ -8,71 +8,64 @@ import { firebaseAuth,adminAuth } from "../middlewares/firebaseAuth.js";
 const router = express.Router();
 
 
-// ✅ GET all products (with filters, now slug-tolerant)
 router.get("/", async (req, res) => {
   try {
     const { category, subCategory, subSubCategory, outOfStock } = req.query;
     let filter = {};
 
-    // Resolve slugs to stored category/subcategory names when possible.
-    // Nav links use slugs (eg. 'school-equipment') while products store human-readable names.
+    // 🧹 Normalize helper (remove spaces/dashes and lowercase)
+    const normalize = (str) => str?.trim().replace(/[-\s]+/g, " ").toLowerCase();
+
     let resolvedCategory = category;
     let resolvedSub = subCategory;
     let resolvedSubSub = subSubCategory;
 
+    // ✅ Resolve category/subcategory names via Category model if available
     if (category) {
-      // Try to find a Category document by slug or (case-insensitive) name
-      const catDoc = await Category.findOne({ $or: [{ slug: category }, { name: new RegExp(`^${category}$`, 'i') }] });
+      const catDoc = await Category.findOne({
+        $or: [
+          { slug: category },
+          { name: new RegExp(`^${category}$`, "i") }
+        ],
+      });
+
       if (catDoc) {
         resolvedCategory = catDoc.name;
-        // If subCategory is provided as a slug, try to resolve it from the category doc
-        if (subCategory && subCategory !== 'all') {
-          const foundSub = catDoc.subCategories?.find(s => s.slug === subCategory || new RegExp(`^${subCategory}$`, 'i').test(s.name));
+
+        if (subCategory && subCategory !== "all") {
+          const foundSub = catDoc.subCategories?.find(
+            (s) =>
+              s.slug === subCategory ||
+              new RegExp(`^${subCategory}$`, "i").test(s.name)
+          );
           if (foundSub) resolvedSub = foundSub.name;
-          // If subSubCategory present, try to resolve under foundSub
-          if (foundSub && subSubCategory && subSubCategory !== 'all') {
-            const foundSubSub = foundSub.subCategories?.find(ss => ss.slug === subSubCategory || new RegExp(`^${subSubCategory}$`, 'i').test(ss.name));
+
+          if (foundSub && subSubCategory && subSubCategory !== "all") {
+            const foundSubSub = foundSub.subCategories?.find(
+              (ss) =>
+                ss.slug === subSubCategory ||
+                new RegExp(`^${subSubCategory}$`, "i").test(ss.name)
+            );
             if (foundSubSub) resolvedSubSub = foundSubSub.name;
           }
         }
       }
     }
 
-   // Normalize and make matching flexible (ignores spaces/dashes/case)
-const normalize = (str) => str?.replace(/[-\s]+/g, '').toLowerCase();
+    // ✅ Build flexible query filters
+    if (resolvedCategory)
+      filter.category = { $regex: new RegExp(`^${normalize(resolvedCategory)}`, "i") };
+    if (resolvedSub && resolvedSub !== "all")
+      filter.subcategory = { $regex: new RegExp(`^${normalize(resolvedSub)}`, "i") };
+    if (resolvedSubSub && resolvedSubSub !== "all")
+      filter.subSubcategory = { $regex: new RegExp(`^${normalize(resolvedSubSub)}`, "i") };
 
-if (resolvedCategory) {
-  const normalized = normalize(resolvedCategory);
-  filter.$expr = {
-    $regexMatch: {
-      input: { $replaceAll: { input: { $toLower: "$category" }, find: "-", replacement: "" } },
-      regex: normalized
-    }
-  };
-}
-if (resolvedSub && resolvedSub !== "all") {
-  const normalized = normalize(resolvedSub);
-  filter.$expr = {
-    $regexMatch: {
-      input: { $replaceAll: { input: { $toLower: "$subcategory" }, find: "-", replacement: "" } },
-      regex: normalized
-    }
-  };
-}
-if (resolvedSubSub && resolvedSubSub !== "all") {
-  const normalized = normalize(resolvedSubSub);
-  filter.$expr = {
-    $regexMatch: {
-      input: { $replaceAll: { input: { $toLower: "$subSubcategory" }, find: "-", replacement: "" } },
-      regex: normalized
-    }
-  };
-}
-
-    console.log("Applied filter:", filter);
 
     const products = await Product.find(filter);
+    console.log("Resolved category/sub/subsub:", resolvedCategory, resolvedSub, resolvedSubSub);
+
     console.log(`✅ Found ${products.length} products`);
+
 
     res.json(products);
   } catch (error) {
@@ -80,6 +73,7 @@ if (resolvedSubSub && resolvedSubSub !== "all") {
     res.status(500).json({ message: "Failed to fetch products" });
   }
 });
+
 
 
 
