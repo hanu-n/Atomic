@@ -38,11 +38,36 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // Case-insensitive filtering using regex on the resolved values
-    if (resolvedCategory) filter.category = new RegExp(`^${resolvedCategory}$`, "i");
-    if (resolvedSub && resolvedSub !== "all") filter.subcategory = new RegExp(`^${resolvedSub}$`, "i");
-    if (resolvedSubSub && resolvedSubSub !== "all") filter.subSubcategory = new RegExp(`^${resolvedSubSub}$`, "i");
-    if (outOfStock === "true") filter.countInStock = { $lte: 0 };
+   // Normalize and make matching flexible (ignores spaces/dashes/case)
+const normalize = (str) => str?.replace(/[-\s]+/g, '').toLowerCase();
+
+if (resolvedCategory) {
+  const normalized = normalize(resolvedCategory);
+  filter.$expr = {
+    $regexMatch: {
+      input: { $replaceAll: { input: { $toLower: "$category" }, find: "-", replacement: "" } },
+      regex: normalized
+    }
+  };
+}
+if (resolvedSub && resolvedSub !== "all") {
+  const normalized = normalize(resolvedSub);
+  filter.$expr = {
+    $regexMatch: {
+      input: { $replaceAll: { input: { $toLower: "$subcategory" }, find: "-", replacement: "" } },
+      regex: normalized
+    }
+  };
+}
+if (resolvedSubSub && resolvedSubSub !== "all") {
+  const normalized = normalize(resolvedSubSub);
+  filter.$expr = {
+    $regexMatch: {
+      input: { $replaceAll: { input: { $toLower: "$subSubcategory" }, find: "-", replacement: "" } },
+      regex: normalized
+    }
+  };
+}
 
     console.log("Applied filter:", filter);
 
