@@ -22,17 +22,14 @@ app.use(express.urlencoded({ extended: true }));
 
 
 app.use(morgan("dev"));
+
 app.use(
   cors({
-    origin: [
-      "https://atomic.netlify.app", // ✅ your deployed frontend
-      "http://localhost:3000",      // ✅ for local testing
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    origin: ["https://atomicmas.netlify.app"], // your frontend
+    methods: ["GET", "POST", "PUT", "DELETE","OPTIONS"],
     credentials: true,
   })
 );
-
 
 app.use('/api/products',productRoutes)
 app.use('/api/contact',contactRoute)
