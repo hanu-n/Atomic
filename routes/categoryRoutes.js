@@ -1,3 +1,4 @@
+//category routes
 import express from "express";
 import Category from "../models/Category.js";
 import categories from "../data/catagory.js";

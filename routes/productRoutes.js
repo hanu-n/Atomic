@@ -1,3 +1,4 @@
+//product routes
 import express from "express";
 import Product from "../models/productModels.js";
 import Category from "../models/Category.js";
@@ -60,12 +61,10 @@ router.get("/", async (req, res) => {
     if (resolvedSubSub && resolvedSubSub !== "all")
       filter.subSubcategory = { $regex: new RegExp(`^${normalize(resolvedSubSub)}`, "i") };
 
+    console.log("🧠 Applied filter:", filter);
 
     const products = await Product.find(filter);
-    console.log("Resolved category/sub/subsub:", resolvedCategory, resolvedSub, resolvedSubSub);
-
     console.log(`✅ Found ${products.length} products`);
-
 
     res.json(products);
   } catch (error) {
