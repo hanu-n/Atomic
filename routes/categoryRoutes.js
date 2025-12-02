@@ -28,27 +28,4 @@ router.get("/:slug", async (req, res) => {
   }
 });
 
-// 🔧 Manual seeding route (for testing)
-router.post("/seed", async (req, res) => {
-  try {
-    console.log("🌱 Seeding categories...");
-    
-    // Clear existing categories
-    await Category.deleteMany({});
-    console.log("🗑️ Cleared existing categories");
-    
-    // Insert new categories
-    const createdCategories = await Category.insertMany(categories);
-    console.log(`✅ Seeded ${createdCategories.length} categories`);
-    
-    res.json({ 
-      message: `Successfully seeded ${createdCategories.length} categories`,
-      categories: createdCategories 
-    });
-  } catch (error) {
-    console.error("❌ Error seeding categories:", error);
-    res.status(500).json({ message: "Error seeding categories", error: error.message });
-  }
-});
-
 export default router;

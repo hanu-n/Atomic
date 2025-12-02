@@ -39,18 +39,40 @@ router.get("/", async (req, res) => {
       }
     }
 
-    // ✅ Build flexible filters (case-insensitive + slug-tolerant)
-    if (resolvedCategory)
-      filter.category = { $regex: new RegExp(`^${normalize(resolvedCategory)}`, "i") };
-    if (resolvedSub && resolvedSub !== "all")
-      filter.subcategory = { $regex: new RegExp(`^${normalize(resolvedSub)}`, "i") };
-    if (resolvedSubSub && resolvedSubSub !== "all")
-      filter.subSubcategory = { $regex: new RegExp(`^${normalize(resolvedSubSub)}`, "i") };
+    // // ✅ Build flexible filters (case-insensitive + slug-tolerant)
+    // if (resolvedCategory)
+    //   filter.category = { $regex: new RegExp(`^${normalize(resolvedCategory)}`, "i") };
+    // if (resolvedSub && resolvedSub !== "all")
+    //   filter.subcategory = { $regex: new RegExp(`^${normalize(resolvedSub)}`, "i") };
+    // if (resolvedSubSub && resolvedSubSub !== "all")
+    //   filter.subSubcategory = { $regex: new RegExp(`^${normalize(resolvedSubSub)}`, "i") };
 
-    // ✅ Handle stock filter
-    if (outOfStock === "true") {
-      filter.countInStock = { $lte: 0 };
-    }
+    // // ✅ Handle stock filter
+    // if (outOfStock === "true") {
+    //   filter.countInStock = { $lte: 0 };
+    // }
+    // In productroutes.js, modify the filter building section:
+if (resolvedCategory) {
+  // Create regex that matches both "school equipment" and "school-equipment"
+  const normalizedCategory = normalize(resolvedCategory);
+  filter.category = { 
+    $regex: new RegExp(`^${normalizedCategory.replace(/\s+/g, '[\\s-]')}`, "i") 
+  };
+}
+
+if (resolvedSub && resolvedSub !== "all") {
+  const normalizedSub = normalize(resolvedSub);
+  filter.subcategory = { 
+    $regex: new RegExp(`^${normalizedSub.replace(/\s+/g, '[\\s-]')}`, "i") 
+  };
+}
+
+if (resolvedSubSub && resolvedSubSub !== "all") {
+  const normalizedSubSub = normalize(resolvedSubSub);
+  filter.subSubcategory = { 
+    $regex: new RegExp(`^${normalizedSubSub.replace(/\s+/g, '[\\s-]')}`, "i") 
+  };
+}
 
     console.log("🧠 Applied filter:", filter);
 
